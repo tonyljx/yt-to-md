@@ -27,11 +27,11 @@ puppeteer.use(StealthPlugin());
 export async function createBrowser() {
   console.log(process.env.NODE_ENV);
   let browser = await puppeteer.launch({
-    // args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
-    // defaultViewport: chrome.defaultViewport,
-    // executablePath: await chrome.executablePath(),
-    // headless: true,
-    // ignoreHTTPSErrors: true,
+    args: [...chrome.args, "--hide-scrollbars", "--disable-web-security"],
+    defaultViewport: chrome.defaultViewport,
+    executablePath: await chrome.executablePath(),
+    headless: true,
+    ignoreHTTPSErrors: true,
     // headless: true,
     // args: ["--no-sandbox", "--disable-setuid-sandbox"],
     // executablePath:
