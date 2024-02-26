@@ -8,6 +8,7 @@ const app = express();
 const port = 3000;
 
 // 允许Express处理JSON和URL编码的请求体
+app.use(cors({ origin: true }));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
