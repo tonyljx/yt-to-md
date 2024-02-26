@@ -6,7 +6,7 @@
     "buildCommand": "npm install & npm run build"
   },
   "deploy": {
-    "startCommand": "npm start",
+    "startCommand": "npm start --host 0.0.0.0 --prod",
     "restartPolicyType": "ON_FAILURE"
   }
 }

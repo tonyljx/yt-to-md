@@ -93,8 +93,11 @@ app.get("/", (req, res) => {
 });
 
 // Use PORT provided in environment or default to 3000
-const port = 3000;
+// const port = 3000;
 
-app.listen(port, "0.0.0.0", () => {
-  console.log(`Server is running on http://localhost:${port}`);
+const host = "0.0.0.0";
+const port = Number(process.env.PORT) || 3000; // 使用 Railway 提供的 PORT 环境变量，或者使用默认端口
+
+app.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}`);
 });
