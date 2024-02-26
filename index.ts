@@ -1,46 +1,32 @@
-const express = require("express");
+import express from "express";
+import { parseChapters } from "./parseChapters";
 const puppeteer = require("puppeteer");
+const morgan = require("morgan");
+
 const app = express();
-// const parseChapters = require("./parseChapters");
 
 const port = 3000;
 
 // 允许Express处理JSON和URL编码的请求体
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// parseChapters函数的定义（确保这部分与你的实际代码一致）
-// function parseChapters(document) {
-//   // 函数体与之前描述的相同
-// }
-function parseChapters() {
-  const allElements = Array.from(
-    document.querySelectorAll(
-      "#panels ytd-engagement-panel-section-list-renderer:nth-child(2) #content ytd-macro-markers-list-renderer #contents ytd-macro-markers-list-item-renderer #endpoint #details"
-    )
-  );
-
-  const withTitleAndTime = allElements.map((node) => ({
-    title: node.querySelector(".macro-markers")?.textContent,
-    timestamp: node.querySelector("#time")?.textContent,
-  }));
-
-  const filtered = withTitleAndTime.filter(
-    (element) =>
-      element.title !== undefined &&
-      element.title !== null &&
-      element.timestamp !== undefined &&
-      element.timestamp !== null
-  );
-
-  const withoutDuplicates = [
-    ...new Map(filtered.map((node) => [node.timestamp, node])).values(),
-  ];
-
-  return withoutDuplicates;
-}
-
 // POST路由处理
+// const api = express.Router();
+
+// 中间件函数，用于打印用户IP和请求的路由
+app.use((req, res, next) => {
+  // 获取用户IP地址
+  const userIp = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  // 获取请求的路由路径
+  const route = req.originalUrl;
+  // 打印信息到控制台
+  console.log(`User IP: ${userIp}, Route: ${route}`);
+  // 继续执行下一个中间件或路由处理器
+  next();
+});
+
 app.post("/scrape", async (req, res) => {
   const { url } = req.body; // 从请求体中获取URL
 
@@ -50,7 +36,11 @@ app.post("/scrape", async (req, res) => {
 
   try {
     // 启动无头浏览器
-    const browser = await puppeteer.launch({ headless: false });
+    const browser = await puppeteer.launch({
+      headless: true, // 指定Chrome可执行文件的路径
+      executablePath:
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    });
     const page = await browser.newPage();
     // 设置自定义 User-Agent
     await page.setUserAgent(

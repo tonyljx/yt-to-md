@@ -1,4 +1,9 @@
-module.exports = function parseChapters(document) {
+export function parseChapters(
+  document: Document
+): {
+  title: string | null | undefined;
+  timestamp: string | null | undefined;
+}[] {
   const allElements = Array.from(
     document.querySelectorAll(
       "#panels ytd-engagement-panel-section-list-renderer:nth-child(2) #content ytd-macro-markers-list-renderer #contents ytd-macro-markers-list-item-renderer #endpoint #details"
@@ -23,4 +28,4 @@ module.exports = function parseChapters(document) {
   ];
 
   return withoutDuplicates;
-};
+}
