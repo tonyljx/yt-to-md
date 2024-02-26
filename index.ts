@@ -27,6 +27,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/hello", (req, res) => {
+  res.end("hello world\n");
+});
+
 app.post("/scrape", async (req, res) => {
   const { url } = req.body; // 从请求体中获取URL
 
