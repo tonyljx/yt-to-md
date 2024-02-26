@@ -1,10 +1,15 @@
 import express from "express";
 import { parseChapters } from "./parseChapters";
 import cors from "cors";
-const puppeteer = require("puppeteer");
 const morgan = require("morgan");
 
 const app = express();
+import {
+  SUBTITLE_DOWNLOADER_URL,
+  fetchYoutubeSubtitleUrls,
+} from "./fetchYoutubeSubtitle";
+import { createBrowser } from "./puppeteer";
+import axios from "axios";
 
 // 允许Express处理JSON和URL编码的请求体
 app.use(cors({ origin: true }));
@@ -27,8 +32,46 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get("/fetch-subtitles/:videoId", async (req, res) => {
+  const { videoId } = req.params;
+
+  try {
+    const response = await axios.post(
+      SUBTITLE_DOWNLOADER_URL,
+      {
+        data: { url: `https://www.youtube.com/watch?v=zduSFxRajkE` },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+          "X-Auth-Token":
+            "1cbcl9XWl9Zlx9Kky8drmJloyWzGyJ2Yw5prm2rKmJndlXyDrXTQgdquun/YxHy2hra1kMWueop9",
+          "X-Requested-Domain": "savesubs.com",
+          "X-Requested-With": "xmlhttprequest",
+        },
+      }
+    );
+    console.log(response);
+
+    // Assuming the API response structure is as you've described
+    const { title, formats } = response.data.response;
+
+    res.json({ title, subtitleList: formats });
+  } catch (error) {
+    console.error("Error fetching YouTube subtitles:", error);
+    res.status(500).json({ message: "Failed to fetch subtitles" });
+  }
+});
+
 app.get("/hello", (req, res) => {
   res.end("hello world\n");
+});
+
+app.get("/subs", async (req, res) => {
+  const result = await fetchYoutubeSubtitleUrls("zduSFxRajkE");
+  res.json(result);
 });
 
 app.post("/scrape", async (req, res) => {
@@ -40,11 +83,7 @@ app.post("/scrape", async (req, res) => {
 
   try {
     // 启动无头浏览器
-    const browser = await puppeteer.launch({
-      headless: true, // 指定Chrome可执行文件的路径
-      // executablePath:
-      //   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    });
+    const browser = await createBrowser();
     const page = await browser.newPage();
     // 设置自定义 User-Agent
     await page.setUserAgent(
