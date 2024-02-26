@@ -1,11 +1,10 @@
 import express from "express";
 import { parseChapters } from "./parseChapters";
+import cors from "cors";
 const puppeteer = require("puppeteer");
 const morgan = require("morgan");
 
 const app = express();
-
-const port = 3000;
 
 // 允许Express处理JSON和URL编码的请求体
 app.use(cors({ origin: true }));
@@ -93,6 +92,9 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
+// Use PORT provided in environment or default to 3000
+const port = 3000;
+
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
