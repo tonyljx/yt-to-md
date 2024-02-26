@@ -42,8 +42,8 @@ app.post("/scrape", async (req, res) => {
     // 启动无头浏览器
     const browser = await puppeteer.launch({
       headless: true, // 指定Chrome可执行文件的路径
-      executablePath:
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      // executablePath:
+      //   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     });
     const page = await browser.newPage();
     // 设置自定义 User-Agent
