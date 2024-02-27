@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import { parseChapters } from "./parseChapters";
 import cors from "cors";
 const morgan = require("morgan");
@@ -10,7 +10,9 @@ import {
 } from "./fetchYoutubeSubtitle";
 import { createBrowser } from "./puppeteer";
 import axios from "axios";
+import "dotenv/config"; // 加载本地.env
 
+// console.log(process.env);
 // 允许Express处理JSON和URL编码的请求体
 app.use(cors({ origin: true }));
 app.use(morgan("dev"));
@@ -32,37 +34,60 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get("/fetch-subtitles/:videoId", async (req, res) => {
+app.get("/subtitle/:videoId", async (req, res) => {
   const { videoId } = req.params;
 
-  try {
-    const response = await axios.post(
-      SUBTITLE_DOWNLOADER_URL,
-      {
-        data: { url: `https://www.youtube.com/watch?v=zduSFxRajkE` },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "User-Agent":
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-          "X-Auth-Token":
-            "1cbcl9XWl9Zlx9Kky8drmJloyWzGyJ2Yw5prm2rKmJndlXyDrXTQgdquun/YxHy2hra1kMWueop9",
-          "X-Requested-Domain": "savesubs.com",
-          "X-Requested-With": "xmlhttprequest",
-        },
-      }
-    );
-    console.log(response);
-
-    // Assuming the API response structure is as you've described
-    const { title, formats } = response.data.response;
-
-    res.json({ title, subtitleList: formats });
-  } catch (error) {
-    console.error("Error fetching YouTube subtitles:", error);
-    res.status(500).json({ message: "Failed to fetch subtitles" });
+  if (!videoId) {
+    return res.status(400).send({ error: "Video ID is required" });
   }
+  // zduSFxRajk
+  console.log("读取env ", process.env.RAPIDAPIKEY);
+  const options = {
+    method: "GET",
+    url: `https://subtitles-for-youtube.p.rapidapi.com/subtitles/${videoId}`,
+    headers: {
+      "X-RapidAPI-Key": process.env.RAPIDAPIKEY,
+      "X-RapidAPI-Host": process.env.RAPIDAPIHOST,
+    },
+  };
+
+  let response;
+  try {
+    response = await axios.request(options);
+    console.log(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+
+  res.json(response?.data);
+  // try {
+  //   const response = await axios.post(
+  //     SUBTITLE_DOWNLOADER_URL,
+  //     {
+  //       data: { url: `https://www.youtube.com/watch?v=zduSFxRajkE` },
+  //     },
+  //     {
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "User-Agent":
+  //           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+  //         "X-Auth-Token":
+  //           "1cbcl9XWl9Zlx9Kky8drmJloyWzGyJ2Yw5prm2rKmJndlXyDrXTQgdquun/YxHy2hra1kMWueop9",
+  //         "X-Requested-Domain": "savesubs.com",
+  //         "X-Requested-With": "xmlhttprequest",
+  //       },
+  //     }
+  //   );
+  //   console.log(response);
+
+  //   // Assuming the API response structure is as you've described
+  //   const { title, formats } = response.data.response;
+
+  //   res.json({ title, subtitleList: formats });
+  // } catch (error) {
+  //   console.error("Error fetching YouTube subtitles:", error);
+  //   res.status(500).json({ message: "Failed to fetch subtitles" });
+  // }
 });
 
 app.get("/hello", (req, res) => {
@@ -135,7 +160,7 @@ app.get("/", (req, res) => {
 // const port = 3000;
 
 const host = "0.0.0.0";
-const port = Number(process.env.PORT) || 3000; // 使用 Railway 提供的 PORT 环境变量，或者使用默认端口
+const port = Number(process.env.PORT) || 8000; // 使用 Railway 提供的 PORT 环境变量，或者使用默认端口
 
 app.listen(port, host, () => {
   console.log(`Server running at http://${host}:${port}`);
